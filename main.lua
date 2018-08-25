@@ -25,7 +25,8 @@ local player_sx = player_width / player_sprite:getWidth()
 local player_sy = player_height / player_sprite:getHeight()
 local fov = math.rad(66)
 local plane_length = 1
-local view_distance = 1000
+local map_view_distance = 1000
+local view_distance = 10
 local rotation_speed = math.pi * 1.5
 local move_speed = 4
 
@@ -41,6 +42,7 @@ local canvas_width = screen_width / 4
 local canvas_height = screen_height / 4
 
 local mapView = false
+local brightnessEnabled = false
 
 function love.load()
   love.window.setMode(screen_width, screen_height)
@@ -95,10 +97,10 @@ function love.draw()
     -- Draw fov
     love.graphics.setColor(0.969, 0.976, 0.467, 0.8)
     love.graphics.polygon("fill", px, py,
-      px + view_distance * math.cos(-fov/2 + rotation),
-      py + view_distance * math.sin(-fov/2 + rotation),
-      px + view_distance * math.cos(fov/2 + rotation),
-      py + view_distance * math.sin(fov/2 + rotation))
+      px + map_view_distance * math.cos(-fov/2 + rotation),
+      py + map_view_distance * math.sin(-fov/2 + rotation),
+      px + map_view_distance * math.cos(fov/2 + rotation),
+      py + map_view_distance * math.sin(fov/2 + rotation))
 
     -- Draw level
     for r, _ in ipairs(level) do
@@ -203,8 +205,19 @@ function love.draw()
       color = {color[1] * 0.9, color[2] * 0.9, color[3] * 0.9}
     end
 
+    -- Draw column
     love.graphics.setColor(color)
     love.graphics.line(x, drawStart, x, drawEnd)
+    love.graphics.setColor(1, 1, 1, 1)
+
+    -- Shading --mark sq(perpDist), use 1/perpDist
+    if brightnessEnabled then
+      local brightness = perpDist / view_distance
+      if brightness > 1 then brightness = 1 end
+      if brightness < 0 then brightness = 0 end
+      love.graphics.setColor(0, 0, 0, brightness)
+      love.graphics.line(x, drawStart, x, drawEnd)
+    end
     love.graphics.setColor(1, 1, 1, 1)
   end
 
@@ -220,6 +233,10 @@ function love.keypressed(k)
 
   if k == "return" then
     mapView = not mapView
+  end
+
+  if k == "b" then
+    brightnessEnabled = not brightnessEnabled
   end
 end
 
