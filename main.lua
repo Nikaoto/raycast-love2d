@@ -1,5 +1,14 @@
 local levels = require "levels"
-local level = levels[1]
+local level = levels[3]
+
+local colors = {
+  [1] = {1, 0, 0},
+  [2] = {0, 0.616, 0},
+  [3] = {0, 0.467, 0.447},
+  [4] = {0, 0.471, 0.718},
+  [5] = {0.773, 0, 0},
+  __index = {1, 0, 0}
+}
 
 local screen_width = 1024
 local screen_height = 768
@@ -21,7 +30,7 @@ local rotation_speed = math.pi * 1.5
 local move_speed = 4
 
 local rotation = 0
-local posX, posY = 3, 2
+local posX, posY = 3, 3
 
 local dir_vector_width = 6
 local plane_vector_width = 6
@@ -39,16 +48,19 @@ function love.load()
 end
 
 function love.update(dt)
+  -- Movement
+  local dx, dy = 0, 0
   if love.keyboard.isDown("up") then
-    posX = posX + math.cos(rotation) * move_speed * dt
-    posY = posY + math.sin(rotation) * move_speed * dt
+    dx = math.cos(rotation) * move_speed * dt
+    dy = math.sin(rotation) * move_speed * dt
   end
 
   if love.keyboard.isDown("down") then
-    posX = posX - math.cos(rotation) * move_speed * dt
-    posY = posY - math.sin(rotation) * move_speed * dt
+    dx = -math.cos(rotation) * move_speed * dt
+    dy = -math.sin(rotation) * move_speed * dt
   end
 
+  -- Rotation
   if love.keyboard.isDown("left") then
     rotation = rotation + rotation_speed * dt
   end
@@ -57,7 +69,17 @@ function love.update(dt)
     rotation = rotation - rotation_speed * dt
   end
 
+  -- Floor rotation to 360deg
   rotation = rotation % (math.pi*2)
+  -- Check level bound collisions and move accordingly
+  local nextX = math.floor(posX + dx)
+  if level[nextX][math.floor(posY)] == 0 then
+    posX = posX + dx
+  end
+  local nextY = math.floor(posY + dy)
+  if level[math.floor(posX)][nextY] == 0 then
+    posY = posY + dy
+  end
 end
 
 function love.draw()
@@ -155,6 +177,7 @@ function love.draw()
         sideDistY = sideDistY + deltaDistY
         side = 1
       end
+
       -- Check wall hit
       if level[mapX][mapY] > 0 then
         hit = true
@@ -174,11 +197,13 @@ function love.draw()
     local drawEnd = screen_height/2 + columnHeight/2
     if drawEnd > screen_height then drawEnd = screen_height - 1 end
 
+    -- Configure color
+    local color = colors[level[mapX][mapY]]
     if side == 0 then
-      love.graphics.setColor(1, 1, 1, 1)
-    else
-      love.graphics.setColor(0.9, 0.9, 0.9, 1)
+      color = {color[1] * 0.9, color[2] * 0.9, color[3] * 0.9}
     end
+
+    love.graphics.setColor(color)
     love.graphics.line(x, drawStart, x, drawEnd)
     love.graphics.setColor(1, 1, 1, 1)
   end
@@ -200,7 +225,7 @@ end
 
 function drawWall(row, column)
   local x, y = row*grid_width, column*grid_height
-  love.graphics.setColor(0, 0, 1)
+  love.graphics.setColor(colors[level[row][column]])
   love.graphics.rectangle("fill", x, y, grid_width, grid_height)
   love.graphics.setColor(1, 1, 1)
 end
@@ -212,3 +237,5 @@ function drawLine(x1, y1, x2, y2, rot, width)
     love.graphics.line(x1 + addX, y1 + addY, x2 + addX, y2 + addY)
   end
 end
+
+function sq(x) return x*x end
