@@ -10,8 +10,9 @@ local colors = {
   __index = {1, 0, 0}
 }
 
-local screen_width = 1024
-local screen_height = 768
+local screen_width = 900
+local screen_height = 600
+local fullscreen = false
 
 local grid_width = 100
 local grid_height = 100
@@ -42,10 +43,10 @@ local canvas_width = screen_width / 4
 local canvas_height = screen_height / 4
 
 local mapView = false
-local brightnessEnabled = false
+local brightnessSetting = 0
 
 function love.load()
-  love.window.setMode(screen_width, screen_height)
+  love.window.setMode(screen_width, screen_height, {fullscreen = fullscreen})
   canvas = love.graphics.newCanvas(screen_width, screen_height)
 end
 
@@ -211,8 +212,15 @@ function love.draw()
     love.graphics.setColor(1, 1, 1, 1)
 
     -- Shading --mark sq(perpDist), use 1/perpDist
-    if brightnessEnabled then
-      local brightness = perpDist / view_distance
+    if brightnessSetting > 0 then
+      local brightness
+      if brightnessSetting == 1 then
+        brightness = perpDist / view_distance
+      elseif brightnessSetting == 2 then
+        brightness = sq(perpDist) / view_distance
+      else
+        brightness = 1/perpDist
+      end
       if brightness > 1 then brightness = 1 end
       if brightness < 0 then brightness = 0 end
       love.graphics.setColor(0, 0, 0, brightness)
@@ -224,6 +232,8 @@ function love.draw()
   -- Draw minimap
   love.graphics.draw(canvas, screen_width - canvas_width, 0, 0, canvas_width / screen_width,
     canvas_height / screen_height)
+  -- Draw brightnessSetting value
+  love.graphics.print("Brightness setting "..tostring(brightnessSetting), 10, 10, 0, 1.2, 1.2)
 end
 
 function love.keypressed(k)
@@ -236,7 +246,10 @@ function love.keypressed(k)
   end
 
   if k == "b" then
-    brightnessEnabled = not brightnessEnabled
+    brightnessSetting = brightnessSetting + 1
+    if brightnessSetting > 3 then
+      brightnessSetting = 0
+    end
   end
 end
 
