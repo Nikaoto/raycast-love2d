@@ -1,10 +1,16 @@
 # raycast-love2d
-A simple raycast renderer made in [Love2D](https://love2d.org)
+A simple raycast renderer I wrote for my Gdevi talk about raycasting.
 
-## Demo
-Click the image below to view the full video
-<br>
-<br>
-<a href="https://i.imgur.com/LY1zwak.gifv">
-  <img src="https://i.imgur.com/LY1zwak.gif" width="50%" height="auto" />
-</a>
+Runs with [Love2D](https://love2d.org).
+
+![raycast-love2d preview](./raycast-love2d_preview.gif)
+
+You can see the talk [here](https://youtu.be/wWlUa5JcCUE). It's in Georgian.
+
+## Running
+
+```
+git clone
+cd raycast-love2d
+love .
+```
